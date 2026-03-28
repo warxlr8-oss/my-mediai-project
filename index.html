@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediAI – Health Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f0f4f8;--surface:#fff;--surface2:#e8eff7;--accent:#1a6b8a;--accent2:#2a9dc2;
+    --accent-light:#d0eaf5;--text:#1a2332;--text-muted:#5a7080;--danger:#c0392b;
+    --border:#ccdae8;--shadow:0 4px 24px rgba(26,107,138,.10);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(26,107,138,.07)}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo-icon{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .logo-icon svg{width:20px;height:20px;fill:white}
+  .logo-text{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--accent);letter-spacing:-.5px}
+  .logo-text span{color:var(--accent2)}
+  .disclaimer-badge{background:#fff3cd;border:1px solid #f0c040;color:#7a5800;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:20px}
+  .app{display:flex;flex:1;max-width:1100px;margin:0 auto;width:100%;padding:24px 16px;gap:20px}
+  .sidebar{width:240px;flex-shrink:0;display:flex;flex-direction:column;gap:14px}
+  .sidebar-card{background:var(--surface);border-radius:16px;padding:16px;border:1px solid var(--border);box-shadow:var(--shadow)}
+  .sidebar-card h3{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px}
+  .quick-btn{width:100%;text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:.82rem;color:var(--text);cursor:pointer;margin-bottom:8px;transition:all .15s;font-family:'DM Sans',sans-serif;line-height:1.4}
+  .quick-btn:hover{background:var(--accent-light);border-color:var(--accent2);color:var(--accent)}
+  .quick-btn:last-child{margin-bottom:0}
+  .emergency-box{background:#fff0f0;border:1px solid #f5b8b8;border-radius:12px;padding:14px;font-size:.78rem;color:var(--danger);line-height:1.5}
+  .emergency-box strong{display:block;margin-bottom:4px;font-size:.84rem}
+  .emergency-box .big-num{font-size:1.4rem;font-weight:700;letter-spacing:1px;display:block;margin:4px 0 2px}
+  .sub-nums{display:flex;flex-direction:column;gap:2px;margin-bottom:10px;font-size:.72rem}
+  .sub-nums span{display:flex;justify-content:space-between}
+  .sub-nums span em{font-style:normal;font-weight:700}
+  .open-emergency-btn{width:100%;background:var(--danger);color:white;border:none;border-radius:8px;padding:8px 10px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+  .open-emergency-btn:hover{background:#a93226}
+  .chat-area{flex:1;display:flex;flex-direction:column;min-width:0}
+  .messages{flex:1;display:flex;flex-direction:column;gap:16px;overflow-y:auto;padding-bottom:8px;min-height:420px;max-height:520px}
+  .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:40px 20px;gap:12px;animation:fadeUp .5s ease}
+  .welcome-icon{width:64px;height:64px;background:var(--accent-light);border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+  .welcome-icon svg{width:36px;height:36px;fill:var(--accent)}
+  .welcome h2{font-family:'DM Serif Display',serif;font-size:1.7rem;color:var(--accent)}
+  .welcome p{font-size:.9rem;color:var(--text-muted);max-width:340px;line-height:1.6}
+  .msg{display:flex;gap:10px;animation:fadeUp .3s ease}
+  .msg.user{flex-direction:row-reverse}
+  .msg-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600}
+  .msg.ai .msg-avatar{background:var(--accent);color:white}
+  .msg.user .msg-avatar{background:var(--surface2);color:var(--accent);border:1px solid var(--border)}
+  .msg-bubble{max-width:75%;padding:12px 16px;border-radius:16px;font-size:.88rem;line-height:1.65;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .msg.ai .msg-bubble{background:var(--surface);border:1px solid var(--border);border-top-left-radius:4px;color:var(--text)}
+  .msg.user .msg-bubble{background:var(--accent);color:white;border-top-right-radius:4px}
+  .msg-bubble strong{font-weight:600}
+  .msg-bubble ul{padding-left:18px;margin:6px 0}
+  .msg-bubble li{margin-bottom:3px}
+  .typing{display:flex;gap:5px;align-items:center;padding:14px 16px;background:var(--surface);border-radius:16px;border:1px solid var(--border);width:fit-content}
+  .typing span{width:7px;height:7px;border-radius:50%;background:var(--accent2);animation:bounce 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}
+  .typing span:nth-child(3){animation-delay:.4s}
+  .input-area{margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+  .input-row{display:flex;align-items:flex-end;padding:10px 12px;gap:8px}
+  textarea{flex:1;border:none;outline:none;resize:none;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--text);background:transparent;min-height:40px;max-height:100px;line-height:1.5;padding:6px 4px}
+  textarea::placeholder{color:var(--text-muted)}
+  .send-btn{width:40px;height:40px;border-radius:12px;border:none;background:var(--accent);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,transform .1s}
+  .send-btn:hover{background:var(--accent2);transform:scale(1.05)}
+  .send-btn:disabled{background:var(--border);cursor:not-allowed;transform:none}
+  .send-btn svg{width:18px;height:18px;fill:white}
+  .bottom-note{text-align:center;font-size:.72rem;color:var(--text-muted);margin-top:10px;line-height:1.5}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,.55);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+  .modal-overlay.open{opacity:1;pointer-events:all}
+  .modal{background:var(--surface);border-radius:22px;width:700px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.22);transform:translateY(20px) scale(.97);transition:transform .25s;overflow:hidden}
+  .modal-overlay.open .modal{transform:translateY(0) scale(1)}
+  .modal-header{background:linear-gradient(135deg,#c0392b 0%,#e74c3c 100%);padding:22px 24px 18px;color:white;position:relative}
+  .modal-header h2{font-family:'DM Serif Display',serif;font-size:1.5rem;margin-bottom:4px}
+  .modal-header p{font-size:.82rem;opacity:.85;line-height:1.4}
+  .modal-close{position:absolute;top:16px;right:18px;background:rgba(255,255,255,.2);border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:1.1rem;color:white;display:flex;align-items:center;justify-content:center;transition:background .15s}
+  .modal-close:hover{background:rgba(255,255,255,.35)}
+  .modal-search{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center}
+  .modal-search input{flex:1;border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;color:var(--text);background:var(--surface2);transition:border-color .15s}
+  .modal-search input:focus{border-color:var(--accent2);background:white}
+  .region-filter{display:flex;gap:6px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--border)}
+  .region-btn{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.76rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text-muted);transition:all .15s}
+  .region-btn.active,.region-btn:hover{background:var(--accent);color:white;border-color:var(--accent)}
+  .countries-grid{overflow-y:auto;padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px;flex:1}
+  .country-card{border:2px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .15s;background:var(--surface);position:relative}
+  .country-card:hover{border-color:var(--accent2);background:var(--accent-light);transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,107,138,.12)}
+  .country-card.selected{border-color:var(--danger);background:#fff5f5}
+  .country-card .flag{font-size:1.5rem;margin-bottom:5px;display:block}
+  .country-card .cname{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:7px}
+  .nums{display:flex;flex-direction:column;gap:3px}
+  .num-row{display:flex;justify-content:space-between;align-items:center}
+  .num-label{font-size:.67rem;color:var(--text-muted);font-weight:500}
+  .num-val{font-size:.8rem;font-weight:700;color:var(--danger);letter-spacing:.5px}
+  .num-val.police{color:var(--accent)}
+  .num-val.fire{color:#e67e22}
+  .selected-check{position:absolute;top:8px;right:8px;width:18px;height:18px;background:var(--danger);border-radius:50%;display:none;align-items:center;justify-content:center}
+  .country-card.selected .selected-check{display:flex}
+  .selected-check svg{width:11px;height:11px;fill:white}
+  .modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface)}
+  .selected-preview{font-size:.82rem;color:var(--text-muted)}
+  .selected-preview strong{color:var(--text)}
+  .confirm-btn{background:var(--danger);color:white;border:none;border-radius:10px;padding:10px 22px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
+  .confirm-btn:hover{background:#a93226}
+  .no-results{text-align:center;color:var(--text-muted);font-size:.88rem;padding:40px 20px;grid-column:1/-1}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14h-2v-2h2zm0-4h-2V7h2z"/></svg></div>
+    <span class="logo-text">Medi<span>AI</span></span>
+  </div>
+  <div class="disclaimer-badge">⚕ For informational use only — not a substitute for professional medical advice</div>
+</header>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <h3>Quick Topics</h3>
+      <button class="quick-btn" onclick="quickAsk('What are common symptoms of dehydration?')">💧 Dehydration symptoms</button>
+      <button class="quick-btn" onclick="quickAsk('How do I manage a mild fever at home?')">🌡️ Managing fever at home</button>
+      <button class="quick-btn" onclick="quickAsk('What foods help reduce inflammation?')">🥗 Anti-inflammatory foods</button>
+      <button class="quick-btn" onclick="quickAsk('What are signs of high blood pressure?')">❤️ Blood pressure signs</button>
+      <button class="quick-btn" onclick="quickAsk('How much sleep do adults need and why?')">😴 Sleep & health</button>
+    </div>
+    <div class="emergency-box">
+      <strong>🚨 Emergency Numbers</strong>
+      <span id="sbCountry" style="font-size:.75rem;display:block;margin-bottom:2px">🇮🇳 India</span>
+      <span class="big-num" id="sbNum">112</span>
+      <div class="sub-nums" id="sbSubNums">
+        <span><span>🚑 Ambulance</span><em id="sbAmb">108</em></span>
+        <span><span>👮 Police</span><em id="sbPol">100</em></span>
+        <span><span>🔥 Fire</span><em id="sbFire">101</em></span>
+      </div>
+      <button class="open-emergency-btn" onclick="openModal()">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        Change Country
+      </button>
+    </div>
+  </aside>
+  <main class="chat-area">
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <div class="welcome-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+        <h2>Hello, how can I help?</h2>
+        <p>Ask me about symptoms, general health tips, medications, nutrition, or anything wellness-related. I'm here to provide clear, trustworthy health information.</p>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="input-row">
+        <textarea id="userInput" placeholder="Describe your symptoms or ask a health question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="bottom-note">MediAI uses Claude AI · Responses are general health information only · Always consult a qualified doctor for medical decisions</p>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🚨 Emergency Numbers by Country</h2>
+      <p>Select your country to see the correct emergency contact numbers.</p>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-search">
+      <input type="text" id="searchInput" placeholder="🔍  Search country…" oninput="renderGrid()" />
+    </div>
+    <div class="region-filter" id="regionFilter"></div>
+    <div class="countries-grid" id="countriesGrid"></div>
+    <div class="modal-footer">
+      <div class="selected-preview" id="selectedPreview">No country selected</div>
+      <button class="confirm-btn" onclick="confirmSelection()">✓ Confirm Selection</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COUNTRIES=[
+  {name:"India",flag:"🇮🇳",region:"Asia",emergency:"112",ambulance:"108",police:"100",fire:"101"},
+  {name:"China",flag:"🇨🇳",region:"Asia",emergency:"120",ambulance:"120",police:"110",fire:"119"},
+  {name:"Japan",flag:"🇯🇵",region:"Asia",emergency:"119",ambulance:"119",police:"110",fire:"119"},
+  {name:"South Korea",flag:"🇰🇷",region:"Asia",emergency:"119",ambulance:"119",police:"112",fire:"119"},
+  {name:"Pakistan",flag:"🇵🇰",region:"Asia",emergency:"115",ambulance:"115",police:"15",fire:"16"},
+  {name:"Bangladesh",flag:"🇧🇩",region:"Asia",emergency:"999",ambulance:"199",police:"999",fire:"199"},
+  {name:"Sri Lanka",flag:"🇱🇰",region:"Asia",emergency:"110",ambulance:"110",police:"118",fire:"111"},
+  {name:"Nepal",flag:"🇳🇵",region:"Asia",emergency:"102",ambulance:"102",police:"100",fire:"101"},
+  {name:"Thailand",flag:"🇹🇭",region:"Asia",emergency:"1669",ambulance:"1669",police:"191",fire:"199"},
+  {name:"Vietnam",flag:"🇻🇳",region:"Asia",emergency:"115",ambulance:"115",police:"113",fire:"114"},
+  {name:"Indonesia",flag:"🇮🇩",region:"Asia",emergency:"118",ambulance:"118",police:"110",fire:"113"},
+  {name:"Philippines",flag:"🇵🇭",region:"Asia",emergency:"911",ambulance:"911",police:"911",fire:"911"},
+  {name:"Malaysia",flag:"🇲🇾",region:"Asia",emergency:"999",ambulance:"999",police:"999",fire:"994"},
+  {name:"Singapore",flag:"🇸🇬",region:"Asia",emergency:"995",ambulance:"995",police:"999",fire:"995"},
+  {name:"Myanmar",flag:"🇲🇲",region:"Asia",emergency:"192",ambulance:"192",police:"199",fire:"191"},
+  {name:"Afghanistan",flag:"🇦🇫",region:"Asia",emergency:"119",ambulance:"119",police:"119",fire:"119"},
+  {name:"Saudi Arabia",flag:"🇸🇦",region:"Middle East",emergency:"911",ambulance:"911",police:"999",fire:"998"},
+  {name:"UAE",flag:"🇦🇪",region:"Middle East",emergency:"998",ambulance:"998",police:"999",fire:"997"},
+  {name:"Qatar",flag:"🇶🇦",region:"Middle East",emergency:"999",ambulance:"999",police:"999",fire:"999"},
+  {name:"Kuwait",flag:"🇰🇼",region:"Middle East",emergency:"112",ambulance:"112",police:"112",fire:"112"},
+  {name:"Bahrain",flag:"🇧🇭",region:"Middle East",emergency:"999",ambulance:"999",police:"999",fire:"999"},
+  {name:"Oman",flag:"🇴🇲",region:"Middle East",emergency:"9999",ambulance:"9999",police:"9999",fire:"9999"},
+  {name:"Israel",flag:"🇮🇱",region:"Middle East",emergency:"101",ambulance:"101",police:"100",fire:"102"},
+  {name:"Jordan",flag:"🇯🇴",region:"Middle East",emergency:"911",ambulance:"911",police:"911",fire:"911"},
+  {name:"Iran",flag:"🇮🇷",region:"Middle East",emergency:"115",ambulance:"115",police:"110",fire:"125"},
+  {name:"Iraq",flag:"🇮🇶",region:"Middle East",emergency:"122",ambulance:"122",police:"104",fire:"115"},
+  {name:"United Kingdom",flag:"🇬🇧",region:"Europe",emergency:"999",ambulance:"999",police:"999",fire:"999"},
+  {name:"Germany",flag:"🇩🇪",region:"Europe",emergency:"112",ambulance:"112",police:"110",fire:"112"},
+  {name:"France",flag:"🇫🇷",region:"Europe",emergency:"15",ambulance:"15",police:"17",fire:"18"},
+  {name:"Italy",flag:"🇮🇹",region:"Europe",emergency:"118",ambulance:"118",police:"113",fire:"115"},
+  {name:"Spain",flag:"🇪🇸",region:"Europe",emergency:"112",ambulance:"112",police:"091",fire:"080"},
+  {name:"Netherlands",flag:"🇳🇱",region:"Europe",emergency:"112",ambulance:"112",police:"112",fire:"112"},
+  {name:"Sweden",flag:"🇸🇪",region:"Europe",emergency:"112",ambulance:"112",police:"112",fire:"112"},
+  {name:"Norway",flag:"🇳🇴",region:"Europe",emergency:"113",ambulance:"113",police:"112",fire:"110"},
+  {name:"Denmark",flag:"🇩🇰",region:"Europe",emergency:"112",ambulance:"112",police:"114",fire:"112"},
+  {name:"Switzerland",flag:"🇨🇭",region:"Europe",emergency:"144",ambulance:"144",police:"117",fire:"118"},
+  {name:"Poland",flag:"🇵🇱",region:"Europe",emergency:"112",ambulance:"999",police:"997",fire:"998"},
+  {name:"Portugal",flag:"🇵🇹",region:"Europe",emergency:"112",ambulance:"112",police:"112",fire:"112"},
+  {name:"Greece",flag:"🇬🇷",region:"Europe",emergency:"166",ambulance:"166",police:"100",fire:"199"},
+  {name:"Turkey",flag:"🇹🇷",region:"Europe",emergency:"112",ambulance:"112",police:"155",fire:"110"},
+  {name:"Russia",flag:"🇷🇺",region:"Europe",emergency:"112",ambulance:"103",police:"102",fire:"101"},
+  {name:"Ukraine",flag:"🇺🇦",region:"Europe",emergency:"112",ambulance:"103",police:"102",fire:"101"},
+  {name:"Belgium",flag:"🇧🇪",region:"Europe",emergency:"112",ambulance:"100",police:"101",fire:"100"},
+  {name:"Austria",flag:"🇦🇹",region:"Europe",emergency:"112",ambulance:"144",police:"133",fire:"122"},
+  {name:"Czech Republic",flag:"🇨🇿",region:"Europe",emergency:"112",ambulance:"155",police:"158",fire:"150"},
+  {name:"Romania",flag:"🇷🇴",region:"Europe",emergency:"112",ambulance:"112",police:"112",fire:"112"},
+  {name:"United States",flag:"🇺🇸",region:"Americas",emergency:"911",ambulance:"911",police:"911",fire:"911"},
+  {name:"Canada",flag:"🇨🇦",region:"Americas",emergency:"911",ambulance:"911",police:"911",fire:"911"},
+  {name:"Mexico",flag:"🇲🇽",region:"Americas",emergency:"911",ambulance:"911",police:"911",fire:"911"},
+  {name:"Brazil",flag:"🇧🇷",region:"Americas",emergency:"192",ambulance:"192",police:"190",fire:"193"},
+  {name:"Argentina",flag:"🇦🇷",region:"Americas",emergency:"107",ambulance:"107",police:"101",fire:"100"},
+  {name:"Colombia",flag:"🇨🇴",region:"Americas",emergency:"123",ambulance:"132",police:"123",fire:"119"},
+  {name:"Chile",flag:"🇨🇱",region:"Americas",emergency:"131",ambulance:"131",police:"133",fire:"132"},
+  {name:"Peru",flag:"🇵🇪",region:"Americas",emergency:"117",ambulance:"117",police:"105",fire:"116"},
+  {name:"Venezuela",flag:"🇻🇪",region:"Americas",emergency:"171",ambulance:"171",police:"171",fire:"171"},
+  {name:"Ecuador",flag:"🇪🇨",region:"Americas",emergency:"911",ambulance:"911",police:"911",fire:"911"},
+  {name:"South Africa",flag:"🇿🇦",region:"Africa",emergency:"10111",ambulance:"10177",police:"10111",fire:"10177"},
+  {name:"Nigeria",flag:"🇳🇬",region:"Africa",emergency:"199",ambulance:"199",police:"199",fire:"199"},
+  {name:"Kenya",flag:"🇰🇪",region:"Africa",emergency:"999",ambulance:"999",police:"999",fire:"999"},
+  {name:"Egypt",flag:"🇪🇬",region:"Africa",emergency:"123",ambulance:"123",police:"122",fire:"180"},
+  {name:"Ethiopia",flag:"🇪🇹",region:"Africa",emergency:"907",ambulance:"907",police:"991",fire:"939"},
+  {name:"Ghana",flag:"🇬🇭",region:"Africa",emergency:"999",ambulance:"193",police:"191",fire:"192"},
+  {name:"Tanzania",flag:"🇹🇿",region:"Africa",emergency:"112",ambulance:"114",police:"112",fire:"115"},
+  {name:"Morocco",flag:"🇲🇦",region:"Africa",emergency:"15",ambulance:"15",police:"19",fire:"15"},
+  {name:"Australia",flag:"🇦🇺",region:"Oceania",emergency:"000",ambulance:"000",police:"000",fire:"000"},
+  {name:"New Zealand",flag:"🇳🇿",region:"Oceania",emergency:"111",ambulance:"111",police:"111",fire:"111"},
+  {name:"Fiji",flag:"🇫🇯",region:"Oceania",emergency:"911",ambulance:"911",police:"917",fire:"910"},
+];
+
+const REGIONS=["All","Asia","Middle East","Europe","Americas","Africa","Oceania"];
+let selected=COUNTRIES.find(c=>c.name==="India");
+let temp=selected;
+let activeRegion="All";
+
+function updateSidebar(){
+  document.getElementById('sbCountry').textContent=selected.flag+' '+selected.name;
+  document.getElementById('sbNum').textContent=selected.emergency;
+  document.getElementById('sbAmb').textContent=selected.ambulance;
+  document.getElementById('sbPol').textContent=selected.police;
+  document.getElementById('sbFire').textContent=selected.fire;
+}
+updateSidebar();
+
+function openModal(){
+  temp=selected;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('searchInput').value='';
+  activeRegion='All';
+  renderRegionFilter();
+  renderGrid();
+  updatePreview();
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
+function closeOnOverlay(e){if(e.target===document.getElementById('modalOverlay'))closeModal()}
+function confirmSelection(){selected=temp;updateSidebar();closeModal()}
+
+function renderRegionFilter(){
+  document.getElementById('regionFilter').innerHTML=REGIONS.map(r=>
+    `<button class="region-btn ${r===activeRegion?'active':''}" onclick="setRegion('${r}')">${r}</button>`
+  ).join('');
+}
+function setRegion(r){activeRegion=r;renderRegionFilter();renderGrid()}
+
+function renderGrid(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const list=COUNTRIES.filter(c=>(activeRegion==='All'||c.region===activeRegion)&&c.name.toLowerCase().includes(q));
+  const grid=document.getElementById('countriesGrid');
+  if(!list.length){grid.innerHTML=`<div class="no-results">No countries found for "<strong>${q}</strong>"</div>`;return}
+  grid.innerHTML=list.map(c=>`
+    <div class="country-card ${temp&&temp.name===c.name?'selected':''}" onclick="selectCountry('${c.name}')">
+      <span class="flag">${c.flag}</span>
+      <div class="cname">${c.name}</div>
+      <div class="nums">
+        <div class="num-row"><span class="num-label">🚑 Ambulance</span><span class="num-val">${c.ambulance}</span></div>
+        <div class="num-row"><span class="num-label">👮 Police</span><span class="num-val police">${c.police}</span></div>
+        <div class="num-row"><span class="num-label">🔥 Fire</span><span class="num-val fire">${c.fire}</span></div>
+      </div>
+      <div class="selected-check"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+    </div>`).join('');
+}
+
+function selectCountry(name){temp=COUNTRIES.find(c=>c.name===name);renderGrid();updatePreview()}
+function updatePreview(){
+  document.getElementById('selectedPreview').innerHTML=temp
+    ?`<strong>${temp.flag} ${temp.name}</strong> — Emergency: <strong style="color:var(--danger)">${temp.emergency}</strong>`
+    :'No country selected';
+}
+
+// CHAT
+const messagesEl=document.getElementById('messages');
+const inputEl=document.getElementById('userInput');
+const sendBtn=document.getElementById('sendBtn');
+const SYSTEM=`You are MediAI, a knowledgeable and empathetic health information assistant. You help users understand symptoms, general wellness, medications, nutrition, and preventive health. Always recommend consulting a licensed doctor. For emergencies, urgently advise calling emergency services. Never diagnose. Be warm and thorough.`;
+let history=[];
+let loading=false;
+
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px'}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
+function quickAsk(q){inputEl.value=q;autoResize(inputEl);sendMessage()}
+function formatMsg(t){
+  return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/^- (.+)/gm,'<li>$1</li>')
+    .replace(/^(\d+)\. (.+)/gm,'<li>$2</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+    .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+}
+function addMsg(role,text){
+  document.getElementById('welcome')?.remove();
+  const d=document.createElement('div');
+  d.className='msg '+role;
+  d.innerHTML=`<div class="msg-avatar">${role==='ai'?'AI':'You'}</div><div class="msg-bubble">${formatMsg(text)}</div>`;
+  messagesEl.appendChild(d);messagesEl.scrollTop=messagesEl.scrollHeight;
+}
+function showTyping(){
+  const d=document.createElement('div');d.className='msg ai';d.id='typing';
+  d.innerHTML=`<div class="msg-avatar">AI</div><div class="typing"><span></span><span></span><span></span></div>`;
+  messagesEl.appendChild(d);messagesEl.scrollTop=messagesEl.scrollHeight;
+}
+function removeTyping(){document.getElementById('typing')?.remove()}
+async function sendMessage(){
+  const text=inputEl.value.trim();
+  if(!text||loading)return;
+  loading=true;sendBtn.disabled=true;
+  inputEl.value='';inputEl.style.height='auto';
+  addMsg('user',text);history.push({role:'user',content:text});showTyping();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:history})
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Sorry, I could not generate a response.';
+    removeTyping();addMsg('ai',reply);history.push({role:'assistant',content:reply});
+  }catch{removeTyping();addMsg('ai','Something went wrong. Please try again.')}
+  loading=false;sendBtn.disabled=false;inputEl.focus();
+}
+</script>
+</body>
+</html>
